@@ -70,4 +70,25 @@
         android:textSize="30px"
         android:id="@+id/timer"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="map"
+        android:textSize="30px"
+        android:id="@+id/map"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="flatMap"
+        android:textSize="30px"
+        android:id="@+id/flatMap"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="concatMap"
+        android:textSize="30px"
+        android:id="@+id/concatMap"/>
+
 </LinearLayout>
