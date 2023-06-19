@@ -4,9 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
+import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import com.lixiang.rxjavademo.createOperator.delay.Defer;
 import com.lixiang.rxjavademo.createOperator.delay.Interval;
 import com.lixiang.rxjavademo.createOperator.delay.IntervalRange;
@@ -19,6 +22,17 @@ import com.lixiang.rxjavademo.createOperator.normal.Just;
 import com.lixiang.rxjavademo.switchOperator.SwitchConcatMap;
 import com.lixiang.rxjavademo.switchOperator.SwitchFlatMap;
 import com.lixiang.rxjavademo.switchOperator.SwitchMap;
+import com.lixiang.rxjavademo.switchThread.Weather;
+import com.lixiang.rxjavademo.switchThread.WeatherServiceApi;
+
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
     Button createBtn;
@@ -33,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
     Button mapBtn;
     Button flatMapBtn;
     Button concatMapBtn;
+    Button switchThreadBtn;
+
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +59,57 @@ public class MainActivity extends AppCompatActivity {
 
         switchOperator();
 
+        switchThread();
+    }
+
+    private void switchThread() {
+        switchThreadBtn = findViewById(R.id.switchThread);
+        switchThreadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                queryWeather();
+
+            }
+        });
+    }
+
+    private static void queryWeather() {
+        //Retrofit
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://apis.juhe.cn/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .build();
+
+        //create request
+        WeatherServiceApi request = retrofit.create(WeatherServiceApi.class);
+
+        Observable<Weather> observable = request.getInformation("北京","xxx");
+
+
+        observable.subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.newThread())
+                .subscribe(new Observer<Weather>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        Log.d(Constant.TAG, "开始采用subscribe连接");
+                    }
+
+                    @Override
+                    public void onNext(Weather value) {
+                        Log.i(Constant.TAG, "onNext: " + value);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(Constant.TAG, "onError: " + e);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(Constant.TAG, "请求成功");
+                    }
+                });
     }
 
     private void switchOperator() {
